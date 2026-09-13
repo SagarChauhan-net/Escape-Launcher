@@ -1,0 +1,29 @@
+name: Build Escape Launcher APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Make Gradle Executable
+        run: chmod +x gradlew
+
+      - name: Build fossDebug APK
+        run: ./gradlew assembleFossDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Escape-Launcher-With-Wallpaper
+          path: app/build/outputs/apk/foss/debug/*.apk
