@@ -13,6 +13,7 @@
     <string name="pitch_black">Nero profondo</string>
     <string name="light">Chiaro</string>
     <string name="dark">Scuro</string>
+    <string name="black_background">Sfondo nero</string>
 
     <!-- Privacy and Analytics stuff -->
     <string name="analytics_and_data_collection">Analisi e raccolta dati</string>
@@ -79,7 +80,7 @@
     <string name="hide_private_space_in_search">Spazio privato nascosto</string>
     <string name="haptic_feedback">Feedback aptico</string>
     <string name="done">Fatto</string>
-    <string name="syncLightDark">Sincronizza con sistema chiaro/scuro</string>
+    <string name="show_wallpaper">Mostra sfondo</string>
     <string name="match_system_wallpaper">Adatta sfondo sistema al tema</string>
     <string name="date">Data</string>
     <string name="home_screen_options">Opzioni Schermata Home</string>
@@ -93,7 +94,6 @@
     <string name="hide_screen_time_page">Nascondi pagina tempo di schermo</string>
     <string name="show_hidden_apps_in_search">Mostra app nascoste nella ricerca</string>
     <string name="manage_favourite_apps">Gestisci app preferite</string>
-    <string name="search_at_bottom">Ricerca in basso</string>
     <string name="apps_list_auto_search">Apri Ricerca Automaticamente</string>
     <string name="sponsor">Sponsor</string>
     <string name="font_licences">Licenze Font</string>

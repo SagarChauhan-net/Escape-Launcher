@@ -1,4 +1,4 @@
-package com.geecee.escapelauncher.core.ui.composables
+package com.geecee.escapelauncher.core.ui.utils
 
 import androidx.annotation.StringRes
 import com.geecee.escapelauncher.core.theme.colours.AppColourScheme
@@ -7,6 +7,7 @@ import com.geecee.escapelauncher.core.ui.R
 @StringRes
 fun AppColourScheme.nameRes(): Int = when (this) {
     AppColourScheme.MONOCHROME -> R.string.monochrome
+    AppColourScheme.WALLPAPER -> R.string.wallpaper
     AppColourScheme.RED -> R.string.red
     AppColourScheme.GREEN -> R.string.green
     AppColourScheme.BLUE -> R.string.blue

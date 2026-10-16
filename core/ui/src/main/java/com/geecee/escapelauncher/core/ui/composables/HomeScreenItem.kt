@@ -12,7 +12,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.geecee.escapelauncher.core.ui.utils.escapeShadow
 
 
 /**
@@ -29,20 +31,21 @@ fun HomeScreenItem(
     onAppClick: () -> Unit,
     onAppLongClick: () -> Unit,
     showScreenTime: Boolean = false,
-    alignment: Alignment.Horizontal = Alignment.CenterHorizontally
+    alignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    color: Color = MaterialTheme.colorScheme.primary,
+    screenTimeColor: Color = MaterialTheme.colorScheme.secondary,
+    screenTimeAlpha: Float = 0.5f,
+    shadow: Boolean = false
 ) {
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = when (alignment) {
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = when (alignment) {
             Alignment.Start -> Arrangement.Start
             Alignment.CenterHorizontally -> Arrangement.Center
             Alignment.End -> Arrangement.End
             else -> Arrangement.Center
-        },
-        modifier = modifier
+        }, modifier = modifier
             .combinedClickable(
-                onClick = onAppClick,
-                onLongClick = onAppLongClick
+                onClick = onAppClick, onLongClick = onAppLongClick
             )
             .fillMaxWidth()
     ) {
@@ -50,8 +53,13 @@ fun HomeScreenItem(
         Text(
             appName,
             modifier = Modifier.padding(vertical = 15.dp),
-            color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.bodyMedium
+            color = color,
+            style = MaterialTheme.typography.bodyMedium.copy(
+                shadow = escapeShadow(
+                    MaterialTheme.colorScheme.scrim,
+                    shadow
+                )
+            ),
         )
 
         // Optional screen time
@@ -60,9 +68,14 @@ fun HomeScreenItem(
                 screenTime,
                 modifier = Modifier
                     .padding(vertical = 15.dp, horizontal = 5.dp)
-                    .alpha(0.5f),
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.bodyMedium
+                    .alpha(screenTimeAlpha),
+                color = screenTimeColor,
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    shadow = escapeShadow(
+                        MaterialTheme.colorScheme.scrim,
+                        shadow
+                    )
+                )
             )
         }
     }

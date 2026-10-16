@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.geecee.escapelauncher.core.common.isMainUserApp
 import com.geecee.escapelauncher.core.domain.apps.AppActionType
-import com.geecee.escapelauncher.core.domain.apps.LaunchAppUseCase
 import com.geecee.escapelauncher.core.domain.apps.GetAppActionsUseCase
 import com.geecee.escapelauncher.core.domain.apps.GetAppShortcutsUseCase
 import com.geecee.escapelauncher.core.domain.apps.OpenAppDetailsUseCase
@@ -34,7 +33,6 @@ class AppsListViewModel @Inject constructor(
     private val getAppActionsUseCase: GetAppActionsUseCase,
     private val getAppShortcutsUseCase: GetAppShortcutsUseCase,
     private val startShortcutUseCase: StartShortcutUseCase,
-    private val launchAppUseCase: LaunchAppUseCase,
     private val uninstallAppUseCase: UninstallAppUseCase,
     private val openAppDetailsUseCase: OpenAppDetailsUseCase,
     searchAppsUseCase: SearchAppsUseCase
@@ -54,10 +52,10 @@ class AppsListViewModel @Inject constructor(
     }
     val showSearchBox = searchSettingsRepository.showSearchBox
     val searchAutoOpen = searchSettingsRepository.searchAutoOpen
-    val bottomSearch = searchSettingsRepository.bottomSearch
     val automaticallyOpenAppsInSearch = searchSettingsRepository.automaticallyOpenAppsInSearch
     val hiddenAppsInSearch = searchSettingsRepository.showHiddenAppsInSearch
     val hapticFeedBackEnabled = launcherBehaviorRepository.hapticFeedBackEnabled
+    val showWallpaper = appearanceRepository.showWallpaper
 
     // Search
     private val _searchText = MutableStateFlow("")
@@ -180,17 +178,6 @@ class AppsListViewModel @Inject constructor(
         started = SharingStarted.WhileSubscribed(5000),
         initialValue = emptyList()
     )
-
-    // Work Apps
-    private val _showWorkApps = MutableStateFlow(false)
-    val showWorkApps: StateFlow<Boolean> = _showWorkApps.asStateFlow()
-    fun setShowWorkApps(show: Boolean) {
-        _showWorkApps.value = show
-    }
-
-    fun launchApp(app: InstalledApp, onAppOpened: ((String) -> Unit)? = null): Boolean {
-        return launchAppUseCase(app, onAppOpened)
-    }
 }
 
 sealed class AppsListUiEvent {

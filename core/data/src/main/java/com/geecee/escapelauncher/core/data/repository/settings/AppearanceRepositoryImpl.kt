@@ -41,4 +41,20 @@ class AppearanceRepositoryImpl @Inject constructor(
     override suspend fun setShowWallpaper(enabled: Boolean) {
         dataStore.edit { it[PreferencesKeys.SHOW_WALLPAPER] = enabled }
     }
+    override val blackBackground: Flow<Boolean> = dataStore.data.map { it[PreferencesKeys.BLACK_BACKGROUND] ?: DefaultSettings.BLACK_BACKGROUND }
+    override suspend fun setBlackBackground(enabled: Boolean) {
+        dataStore.edit { it[PreferencesKeys.BLACK_BACKGROUND] = enabled }
+    }
+    override suspend fun setBackgroundMode(showWallpaper: Boolean, blackBackground: Boolean) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.SHOW_WALLPAPER] = showWallpaper
+            preferences[PreferencesKeys.BLACK_BACKGROUND] = blackBackground
+        }
+    }
+    override val nightMode: Flow<Int> = dataStore.data.map { it[PreferencesKeys.NIGHTMODE] ?: DefaultSettings.NIGHT_MODE }
+    override suspend fun setNightMode(nightMode: Int) {
+        dataStore.edit { preferences ->
+            preferences[PreferencesKeys.NIGHTMODE] = nightMode
+        }
+    }
 }

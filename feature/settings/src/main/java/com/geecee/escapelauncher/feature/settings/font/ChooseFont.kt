@@ -45,17 +45,19 @@ fun ChooseFont(
     val selectedFont by themeViewModel.font.collectAsState(initial = DefaultSettings.FONT)
 
     val fontNames = listOf(
+        "Outfit",
         "Jost",
         "Inter",
         "Lexend",
+        "Google Sans Flex",
         "Work Sans",
         "Poppins",
         "Roboto",
         "Open Sans",
         "Lora",
-        "Outfit",
         "IBM Plex Sans",
-        "IBM Plex Serif"
+        "IBM Plex Serif",
+        "System"
     )
 
     Box(

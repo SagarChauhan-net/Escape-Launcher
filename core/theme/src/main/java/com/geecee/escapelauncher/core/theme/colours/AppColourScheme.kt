@@ -1,6 +1,9 @@
 package com.geecee.escapelauncher.core.theme.colours
 
+import android.app.WallpaperManager
+import android.content.Context
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
@@ -9,6 +12,7 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toColorLong
 import androidx.compose.ui.platform.LocalContext
 
 /**
@@ -26,7 +30,8 @@ enum class AppColourScheme(val id: Int, val seedColor: Color? = null) {
     PURPLE(15, Color(0xFF6750A4)),
     PINK(16, Color(0xFF984061)),
     SYSTEM(12),
-    ESCAPE_THEME(13);
+    WALLPAPER(17),
+    ESCAPE_THEME(13, Color(0xFFB2D8D8));
 
     companion object {
         /**
@@ -42,6 +47,7 @@ enum class AppColourScheme(val id: Int, val seedColor: Color? = null) {
         val selectableThemes = listOf(
             ESCAPE_THEME,
             SYSTEM,
+            WALLPAPER,
             RED,
             ORANGE,
             YELLOW,
@@ -60,18 +66,29 @@ enum class AppColourScheme(val id: Int, val seedColor: Color? = null) {
  */
 @Composable
 fun AppColourScheme.resolveColorScheme(): ColorScheme {
-    val isDark = isSystemInDarkTheme()
+    return resolveColorScheme(LocalContext.current, isSystemInDarkTheme())
+}
 
+/**
+ * Non-composable variant of [resolveColorScheme] so callers can cache the result with `remember`;
+ * generating a scheme from a seed evaluates ~50 HCT colours and shouldn't run every recomposition.
+ */
+fun AppColourScheme.resolveColorScheme(context: Context, isDark: Boolean): ColorScheme {
     return when (this) {
-        AppColourScheme.ESCAPE_THEME -> darkSchemeEscapeTheme
-        
+        //AppColourScheme.ESCAPE_THEME -> darkSchemeEscapeTheme
+
         AppColourScheme.SYSTEM -> {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val context = LocalContext.current
                 if (isDark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
             } else {
                 if (isDark) darkColorScheme() else lightColorScheme()
             }
+        }
+
+        AppColourScheme.WALLPAPER -> {
+            val seed = getWallpaperColorCompat(context) ?: Color(0xFFFF5722)
+            Log.d("resolveColorScheme", "Using wallpaper color: ${seed.toColorLong()}")
+            DynamicColourSchemeUtils.generateColorSchemeFromSeed(seed, isDark)
         }
 
         else -> {
@@ -85,4 +102,17 @@ fun AppColourScheme.resolveColorScheme(): ColorScheme {
             } ?: darkSchemeEscapeTheme
         }
     }
+}
+
+private fun getWallpaperColorCompat(context: Context): Color? {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        try {
+            val wallpaperManager = WallpaperManager.getInstance(context)
+            val colors = wallpaperManager.getWallpaperColors(WallpaperManager.FLAG_SYSTEM)
+            colors?.primaryColor?.toArgb()?.let { return Color(it) }
+        } catch (e: Exception) {
+            Log.e("getWallpaperColorCompat", "Error getting wallpaper color", e)
+        }
+    }
+    return null
 }

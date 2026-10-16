@@ -67,7 +67,7 @@
     <string name="hide_private_space_in_search">Espazo privado oculto</string>
     <string name="haptic_feedback">Resposta háptica</string>
     <string name="done">Feito</string>
-    <string name="syncLightDark">Sincr. co sistema, claro/escuro</string>
+    <string name="show_wallpaper">Mostrar fondo de pantalla</string>
     <string name="match_system_wallpaper">Facer coincidir fondo de pantalla do sistema coa decoración</string>
     <string name="date">Data</string>
     <string name="home_screen_options">Opcións da Pantalla de Inicio</string>
@@ -81,7 +81,6 @@
     <string name="hide_screen_time_page">Ocultar páxina de tempo en pantalla</string>
     <string name="show_hidden_apps_in_search">Mostrar apps ocultas ao buscar</string>
     <string name="manage_favourite_apps">Xestión das apps favoritas</string>
-    <string name="search_at_bottom">Busca na parte inferior</string>
     <string name="apps_list_auto_search">Abrir automáticamente a busca</string>
     <string name="sponsor">Patrocinio</string>
     <string name="font_licences">Licenzas das tipografías</string>
@@ -127,6 +126,7 @@
     <string name="green">Verde claro</string>
     <string name="orange">Laranxa</string>
     <string name="system">Sistema</string>
+    <string name="black_background">Fondo negro</string>
     <string name="accessibility_service_description">Permite que a app apague a pantalla.</string>
     <string name="back">Volver</string>
     <string name="launch_secure_folder">Cartafol Seguro</string>

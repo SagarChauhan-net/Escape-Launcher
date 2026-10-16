@@ -1,6 +1,5 @@
 package com.geecee.escapelauncher.core.ui.composables
-
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -37,7 +35,6 @@ import androidx.compose.ui.unit.dp
  * @param isTopOfGroup Whether this item is the first in a group of settings.
  * @param isBottomOfGroup Whether this item is the last in a group of settings.
  */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsSingleChoiceSegmentedButtons(
     label: String,
@@ -45,24 +42,25 @@ fun SettingsSingleChoiceSegmentedButtons(
     selectedIndex: Int,
     onSelectedIndexChange: (Int) -> Unit,
     isTopOfGroup: Boolean = false,
-    isBottomOfGroup: Boolean = false
+    isBottomOfGroup: Boolean = false,
+    enabled: Boolean = true
 ) {
     val groupEdgeCornerRadius = 24.dp
     val defaultCornerRadius = 8.dp
 
-    val topStartRadius = if (isTopOfGroup) groupEdgeCornerRadius else defaultCornerRadius
-    val topEndRadius = if (isTopOfGroup) groupEdgeCornerRadius else defaultCornerRadius
-    val bottomStartRadius = if (isBottomOfGroup) groupEdgeCornerRadius else defaultCornerRadius
-    val bottomEndRadius = if (isBottomOfGroup) groupEdgeCornerRadius else defaultCornerRadius
+    val topStartRadius = animateDpAsState(if (isTopOfGroup) groupEdgeCornerRadius else defaultCornerRadius)
+    val topEndRadius = animateDpAsState(if (isTopOfGroup) groupEdgeCornerRadius else defaultCornerRadius)
+    val bottomStartRadius = animateDpAsState(if (isBottomOfGroup) groupEdgeCornerRadius else defaultCornerRadius)
+    val bottomEndRadius = animateDpAsState(if (isBottomOfGroup) groupEdgeCornerRadius else defaultCornerRadius)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 1.dp), shape = RoundedCornerShape(
-            topStart = topStartRadius,
-            topEnd = topEndRadius,
-            bottomStart = bottomStartRadius,
-            bottomEnd = bottomEndRadius
+            topStart = topStartRadius.value,
+            topEnd = topEndRadius.value,
+            bottomStart = bottomStartRadius.value,
+            bottomEnd = bottomEndRadius.value
         ), colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             contentColor = MaterialTheme.colorScheme.onSurface
@@ -75,14 +73,16 @@ fun SettingsSingleChoiceSegmentedButtons(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            AutoResizingText(
-                text = label,
-                modifier = Modifier.weight(1f)
-            )
+            if(label != "") {
+                AutoResizingText(
+                    text = label,
+                    modifier = Modifier.weight(1f)
+                )
+            }
 
             SingleChoiceSegmentedButtonRow(
                 modifier = Modifier
-                    .padding(start = 16.dp)
+                    .padding(start = if(label != "") 16.dp else 0.dp)
                     .weight(4f)
             ) {
                 options.forEachIndexed { index, optionLabel ->
@@ -91,7 +91,7 @@ fun SettingsSingleChoiceSegmentedButtons(
                             index = index, count = options.size
                         ), onClick = {
                             onSelectedIndexChange(index)
-                        }, selected = index == selectedIndex
+                        }, selected = index == selectedIndex, enabled = enabled
                     ) {
                         Text(text = optionLabel, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
@@ -115,7 +115,6 @@ fun SettingsSingleChoiceSegmentedButtons(
  * @param isTopOfGroup Whether this item is the first in a group of settings, for corner rounding.
  * @param isBottomOfGroup Whether this item is the last in a group of settings, for corner rounding.
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SettingsSlider(
     label: String,

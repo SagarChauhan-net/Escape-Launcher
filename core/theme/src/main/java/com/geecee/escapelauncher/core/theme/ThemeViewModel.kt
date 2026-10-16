@@ -39,17 +39,27 @@ class ThemeViewModel @Inject constructor(
 
     val showWallpaper = appearanceRepository.showWallpaper
 
-    fun setShowWallpaper(enabled: Boolean) {
-        viewModelScope.launch {
-            appearanceRepository.setShowWallpaper(enabled)
-        }
-    }
-
     val font = appearanceRepository.font
 
     fun setFont(value: String) {
         viewModelScope.launch {
             appearanceRepository.setFont(value)
+        }
+    }
+
+    val blackBackground = appearanceRepository.blackBackground
+
+    fun setBackgroundMode(showWallpaper: Boolean, blackBackground: Boolean) {
+        viewModelScope.launch {
+            appearanceRepository.setBackgroundMode(showWallpaper, blackBackground)
+        }
+    }
+
+    val nightMode = appearanceRepository.nightMode
+
+    fun setNightMode(nightMode: Int) {
+        viewModelScope.launch {
+            appearanceRepository.setNightMode(nightMode = nightMode)
         }
     }
 }

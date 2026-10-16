@@ -44,12 +44,16 @@ object DefaultSettings {
     // Theme
     const val THEME = 13
     const val SHOW_WALLPAPER = false
+    const val BLACK_BACKGROUND = false
     const val FONT = "Outfit"
+    const val NIGHT_MODE_SYNC = 0
+    const val NIGHT_MODE_DARK = 1
+    const val NIGHT_MODE_LIGHT = 2
+    const val NIGHT_MODE = NIGHT_MODE_SYNC
 
     // Search
     const val SHOW_SEARCH_BOX = true
     const val SEARCH_AUTO_OPEN = false
-    const val BOTTOM_SEARCH = false
     const val AUTOMATICALLY_OPEN_APPS_IN_SEARCH = false
 
     // Misc

@@ -8,7 +8,9 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,17 +34,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.geecee.escapelauncher.feature.settings.SettingsNavKey
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.geecee.escapelauncher.core.common.configureStatusBar
 import com.geecee.escapelauncher.core.ui.R
 import com.geecee.escapelauncher.core.ui.composables.EscapeHeader
 import com.geecee.escapelauncher.core.ui.composables.EscapeSubhead
 import com.geecee.escapelauncher.core.ui.composables.FooterBox
-import com.geecee.escapelauncher.core.ui.composables.SettingsButton
+import com.geecee.escapelauncher.core.ui.composables.NotDefaultLauncher
 import com.geecee.escapelauncher.core.ui.composables.SettingsNavigationItem
 import com.geecee.escapelauncher.core.ui.composables.SettingsSingleChoiceSegmentedButtons
+import com.geecee.escapelauncher.core.ui.composables.SettingsSmallSpacer
 import com.geecee.escapelauncher.core.ui.composables.SettingsSpacer
 import com.geecee.escapelauncher.core.ui.composables.SettingsSwitch
+import com.geecee.escapelauncher.feature.settings.SettingsNavKey
 import com.geecee.escapelauncher.feature.settings.weather.WeatherAppPicker
 import com.geecee.escapelauncher.feature.weather.WeatherViewModel
 
@@ -54,7 +61,6 @@ import com.geecee.escapelauncher.feature.weather.WeatherViewModel
  *
  * @see Settings
  */
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun MainSettingsPage(
     goBack: () -> Unit,
@@ -71,10 +77,27 @@ fun MainSettingsPage(
     val uiState by mainSettingsPageViewModel.uiState.collectAsState()
     var showWeatherAppPicker by remember { mutableStateOf(false) }
 
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                mainSettingsPageViewModel.updateLauncherStatus()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     // To show the default launcher prompt, the activity must be started for a result so this is required instead of Context.startActivity
     val roleLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
-    ) { _ -> }
+    ) { _ ->
+        mainSettingsPageViewModel.updateLauncherStatus()
+    }
+
+    val isDefaultLauncher by mainSettingsPageViewModel.isDefaultLauncher.collectAsState()
 
     Box(
         Modifier
@@ -92,6 +115,15 @@ fun MainSettingsPage(
                 EscapeHeader(
                     goBack, stringResource(R.string.settings)
                 )
+            }
+
+            item(key = "not_default_launcher") {
+                AnimatedVisibility(!isDefaultLauncher, enter = fadeIn(), exit = fadeOut()) {
+                    NotDefaultLauncher {
+                        val intent = mainSettingsPageViewModel.getPromptDefaultLauncherIntent()
+                        roleLauncher.launch(intent)
+                    }
+                }
             }
 
             //General
@@ -112,6 +144,16 @@ fun MainSettingsPage(
                     onClick = { onNavigate(SettingsNavKey.ChooseFont) })
             }
 
+            item(key = "show_status_bar") {
+                SettingsSwitch(
+                    label = stringResource(id = R.string.show_status_bar),
+                    checked = uiState.showStatusBar,
+                    onCheckedChange = {
+                        mainSettingsPageViewModel.setShowStatusBar(it)
+                        activity?.window?.configureStatusBar(hide = !it)
+                    })
+            }
+
             item(key = "haptic") {
                 SettingsSwitch(
                     label = stringResource(id = R.string.haptic_feedback),
@@ -124,7 +166,7 @@ fun MainSettingsPage(
             }
 
             // Home options
-            item(key = "home_options_subhead") { EscapeSubhead(stringResource(R.string.home_screen_options)) }
+            item(key = "home_options_subhead") { EscapeSubhead(stringResource(R.string.home)) }
 
             item(key = "show_clock") {
                 SettingsSwitch(
@@ -150,28 +192,38 @@ fun MainSettingsPage(
                 SettingsSwitch(
                     label = stringResource(id = R.string.big_clock),
                     checked = uiState.bigClock,
+                    isBottomOfGroup = true,
                     onCheckedChange = {
                         mainSettingsPageViewModel.setBigClock(it)
                     })
+            }
+
+            item(key = "clock_group_spacer") {
+                SettingsSmallSpacer()
             }
 
             item(key = "show_date") {
                 SettingsSwitch(
                     label = stringResource(id = R.string.date),
                     checked = uiState.showDate,
+                    isTopOfGroup = true,
                     onCheckedChange = {
                         mainSettingsPageViewModel.setShowDate(it)
                     })
             }
 
-            item(key = "show_status_bar") {
+            item(key = "screen_time_home") {
                 SettingsSwitch(
-                    label = stringResource(id = R.string.show_status_bar),
-                    checked = uiState.showStatusBar,
+                    label = stringResource(id = R.string.screen_time_on_home_screen),
+                    checked = uiState.showScreenTimeHome,
+                    isBottomOfGroup = true,
                     onCheckedChange = {
-                        mainSettingsPageViewModel.setShowStatusBar(it)
-                        activity?.window?.configureStatusBar(hide = !it)
+                        mainSettingsPageViewModel.setShowScreenTimeHome(it)
                     })
+            }
+
+            item(key = "date_group_spacer") {
+                SettingsSmallSpacer()
             }
 
             if (!mainSettingsPageViewModel.appConfiguration.isFoss) {
@@ -179,6 +231,7 @@ fun MainSettingsPage(
                     SettingsSwitch(
                         label = stringResource(id = R.string.show_weather),
                         checked = uiState.showWeather,
+                        isTopOfGroup = true,
                         onCheckedChange = {
                             mainSettingsPageViewModel.setShowWeather(it)
                             if (it) {
@@ -201,7 +254,12 @@ fun MainSettingsPage(
                     SettingsNavigationItem(
                         label = stringResource(id = R.string.choose_weather_app),
                         false,
+                        isBottomOfGroup = true,
                         onClick = { showWeatherAppPicker = true })
+                }
+
+                item(key = "weather_group_spacer") {
+                    SettingsSmallSpacer()
                 }
             }
 
@@ -209,20 +267,16 @@ fun MainSettingsPage(
                 SettingsNavigationItem(
                     label = stringResource(id = R.string.widget),
                     false,
+                    isTopOfGroup = true,
+                    isBottomOfGroup = true,
                     onClick = { onNavigate(SettingsNavKey.Widget) })
             }
 
-            item(key = "manage_fav_apps") {
-                SettingsNavigationItem(
-                    stringResource(R.string.manage_favourite_apps),
-                    diagonalArrow = false,
-                    isBottomOfGroup = Build.VERSION.SDK_INT < Build.VERSION_CODES.P,
-                    onClick = {
-                        onNavigate(SettingsNavKey.BulkFavouriteApps)
-                    })
-            }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                item(key = "double_tap_to_lock_top_spacer") {
+                    SettingsSmallSpacer()
+                }
+
                 item(key = "double_tap_to_lock") {
                     SettingsSwitch(
                         label = stringResource(id = R.string.double_tap_to_lock),
@@ -230,15 +284,17 @@ fun MainSettingsPage(
                         onCheckedChange = {
                             mainSettingsPageViewModel.setDoubleTapToLock(it)
                         },
+                        isTopOfGroup = true,
                         isBottomOfGroup = uiState.isAccessibilityServiceEnabled
                     )
                 }
 
                 if (!uiState.isAccessibilityServiceEnabled) {
                     item(key = "enable_accessibility") {
-                        SettingsButton(
+                        SettingsNavigationItem(
                             label = stringResource(R.string.enable_accessibility),
                             isBottomOfGroup = true,
+                            diagonalArrow = true,
                             onClick = {
                                 val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
                                 intent.addFlags(FLAG_ACTIVITY_NEW_TASK)
@@ -278,12 +334,18 @@ fun MainSettingsPage(
                 )
 
                 SettingsSingleChoiceSegmentedButtons(
-                    label = "",
+                    label = " ",
                     options = homeVerticalOptions,
                     selectedIndex = uiState.homeVAlignment,
                     onSelectedIndexChange = { newIndex ->
                         mainSettingsPageViewModel.setHomeVAlignment(newIndex)
-                    })
+                    },
+                    isBottomOfGroup = true
+                )
+            }
+
+            item(key = "alignements_spacer") {
+                SettingsSmallSpacer()
             }
 
             item(key = "apps_alignment") {
@@ -300,6 +362,7 @@ fun MainSettingsPage(
                     onSelectedIndexChange = { newIndex ->
                         mainSettingsPageViewModel.setAppsAlignment(newIndex)
                     },
+                    isTopOfGroup = true,
                     isBottomOfGroup = true
                 )
             }
@@ -324,16 +387,6 @@ fun MainSettingsPage(
                     isBottomOfGroup = false,
                     onCheckedChange = {
                         mainSettingsPageViewModel.setAutomaticallyOpenAppsInSearch(it)
-                    })
-            }
-
-            item(key = "bottom_search") {
-                SettingsSwitch(
-                    label = stringResource(id = R.string.search_at_bottom),
-                    checked = uiState.bottomSearch,
-                    isBottomOfGroup = false,
-                    onCheckedChange = {
-                        mainSettingsPageViewModel.setBottomSearch(it)
                     })
             }
 
@@ -364,18 +417,9 @@ fun MainSettingsPage(
                 SettingsSwitch(
                     label = stringResource(id = R.string.hide_screen_time_page),
                     checked = uiState.hideScreenTimePage,
-                    onCheckedChange = {
-                        mainSettingsPageViewModel.setHideScreenTimePage(it)
-                    })
-            }
-
-            item(key = "screen_time_home") {
-                SettingsSwitch(
-                    label = stringResource(id = R.string.screen_time_on_home_screen),
-                    checked = uiState.showScreenTimeHome,
                     isBottomOfGroup = true,
                     onCheckedChange = {
-                        mainSettingsPageViewModel.setShowScreenTimeHome(it)
+                        mainSettingsPageViewModel.setHideScreenTimePage(it)
                     })
             }
 
@@ -386,11 +430,20 @@ fun MainSettingsPage(
                 )
             }
 
+            item(key = "manage_fav_apps") {
+                SettingsNavigationItem(
+                    stringResource(R.string.manage_favourite_apps),
+                    diagonalArrow = false,
+                    isTopOfGroup = true,
+                    onClick = {
+                        onNavigate(SettingsNavKey.BulkFavouriteApps)
+                    })
+            }
+
             item(key = "manage_hidden_apps") {
                 SettingsNavigationItem(
                     label = stringResource(id = R.string.manage_hidden_apps),
                     false,
-                    isTopOfGroup = true,
                     onClick = { onNavigate(SettingsNavKey.HiddenApps) })
             }
 
@@ -454,7 +507,7 @@ fun MainSettingsPage(
                     onSponsorClick = {
                         val url = "https://github.com/sponsors/GeorgeClensy"
                         val i = Intent(Intent.ACTION_VIEW)
-                        i.setData(url.toUri())
+                        i.data = url.toUri()
                         i.addFlags(FLAG_ACTIVITY_NEW_TASK)
                         context.startActivity(i)
                     },

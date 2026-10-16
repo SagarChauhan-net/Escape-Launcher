@@ -7,6 +7,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -14,11 +15,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,9 +38,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.geecee.escapelauncher.core.theme.EscapeThemePreview
+import com.geecee.escapelauncher.core.ui.R
 
 /**
  * Switch for setting with a label on the left
@@ -104,7 +113,7 @@ fun SettingsSwitch(
  *
  * @param label The text to be shown
  * @param diagonalArrow Whether the arrow should be pointed upwards to signal that pressing this will take you out of Escape Launcher
- * @param repalceIconWichCheck Will replace the icon with a tick
+ * @param replaceIconWhichCheck Will replace the icon with a tick
  * @param onClick When composable is clicked
  * @param isTopOfGroup Whether this item is at the top of a group of items, for corner rounding
  * @param isBottomOfGroup Whether this item is at the bottom of a group of items, for corner rounding
@@ -114,7 +123,7 @@ fun SettingsSwitch(
 fun SettingsNavigationItem(
     label: String,
     diagonalArrow: Boolean?,
-    repalceIconWichCheck: Boolean = false,
+    replaceIconWhichCheck: Boolean = false,
     onClick: () -> Unit,
     isTopOfGroup: Boolean = false,
     isBottomOfGroup: Boolean = false
@@ -157,15 +166,14 @@ fun SettingsNavigationItem(
                 style = MaterialTheme.typography.bodyMedium,
             )
             val iconModifier = Modifier.size(24.dp) // Standardized icon size slightly
-            if (repalceIconWichCheck) {
+            if (replaceIconWhichCheck) {
                 Icon(
                     Icons.Rounded.Check,
                     contentDescription = null,
                     modifier = iconModifier,
                     tint = MaterialTheme.colorScheme.onSurface,
                 )
-            }
-            else {
+            } else {
                 if (diagonalArrow == true) { // Explicitly check for true
                     Icon(
                         Icons.AutoMirrored.Default.KeyboardArrowRight,
@@ -400,4 +408,81 @@ fun SettingsSwipeableButton(
 @Composable
 fun SettingsSpacer() {
     Spacer(modifier = Modifier.height(30.dp))
+}
+
+/**
+ * Spacer 10.dp height
+ */
+@Composable
+fun SettingsSmallSpacer() {
+    Spacer(modifier = Modifier.height(10.dp))
+}
+
+@Composable
+fun NotDefaultLauncher(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .padding(vertical = 1.dp)
+            .fillMaxWidth()
+            .clickable(onClick = {
+                onClick()
+            }),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        )
+    ) {
+        Row(
+            Modifier
+                .padding(top = 24.dp, start = 12.dp, end = 24.dp, bottom = 24.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                Icons.Rounded.Home,
+                "Home",
+                Modifier
+                    .padding(3.dp)
+                    .size(60.dp)
+            )
+
+            Spacer(
+                Modifier.width(10.dp)
+            )
+
+            Column {
+                AutoResizingText(
+                    text = stringResource(R.string.escape_not_default),
+                    modifier = Modifier,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.W600)
+                )
+
+                Spacer(Modifier.height(5.dp))
+
+                AutoResizingText(
+                    text = stringResource(R.string.exiting_apps_will_take_you_home),
+                    modifier = Modifier,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    style = MaterialTheme.typography.bodySmall,
+                    textAlign = TextAlign.Start,
+                    maxLines = 100,
+                    singleLine = false
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun PrevNotDefaultLauncher() {
+    EscapeThemePreview {
+        NotDefaultLauncher(
+            onClick = {}
+        )
+    }
 }

@@ -1,12 +1,14 @@
 package com.geecee.escapelauncher.core.theme
 
 import android.app.Activity
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -28,16 +30,45 @@ fun EscapeTheme(
 ) {
     val context = LocalContext.current
     val colorScheme by themeViewModel.theme.collectAsState(AppColourScheme.ESCAPE_THEME)
-    val font by themeViewModel.font.collectAsState("Jost")
+    val blackBackground by themeViewModel.blackBackground.collectAsState(initial = false)
+    val nightMode by themeViewModel.nightMode.collectAsState(initial = 0)
+    val font by themeViewModel.font.collectAsState("Outfit") // Must match DefaultSettings.FONT
 
-    val fontFamily = remember(fontName, font) {
-        getFontFamily(
-            context = context,
-            fontName = fontName ?: font
-        )
+    val fontFamily = if(font != "System") {
+        remember(fontName, font) {
+            getFontFamily(
+                context = context,
+                fontName = fontName ?: font
+            )
+        }
+    }
+    else {
+        FontFamily.Default
+    }
+    val typography = remember(fontFamily) { escapeType(fontFamily) }
+
+    // Generating a scheme from a seed walks ~50 HCT colours; only redo it when the input changes
+    val selectedScheme = theme ?: colorScheme
+    val isDark = isSystemInDarkTheme()
+    val resolvedColorScheme = remember(selectedScheme, isDark, blackBackground, nightMode) {
+        val shouldBeDark = when(nightMode) {
+            0 -> isDark
+            1 -> true
+            2 -> false
+            else -> isDark
+        }
+
+        val scheme = selectedScheme.resolveColorScheme(context, shouldBeDark || blackBackground)
+        if (blackBackground) {
+            scheme.copy(
+                background = Color.Black,
+                surface = Color.Black,
+            )
+        } else {
+            scheme
+        }
     }
 
-    val resolvedColorScheme = (theme ?: colorScheme).resolveColorScheme()
 
     // Keep status bar icons readable against the themed background (dark icons on a light surface)
     val view = LocalView.current
@@ -52,7 +83,7 @@ fun EscapeTheme(
 
     MaterialTheme(
         colorScheme = resolvedColorScheme,
-        typography = escapeType(fontFamily),
+        typography = typography,
         content = content
     )
 }
